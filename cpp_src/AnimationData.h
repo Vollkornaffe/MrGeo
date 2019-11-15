@@ -45,7 +45,10 @@ struct AnimationData {
         for (size_t frame = 0; frame < requested_frames; frame++) {
           double t = static_cast<double>(frame) / static_cast<double>(requested_frames);
 
-          Q q = quaternionFourier.get_base(term, V2(l,t));
+          Q q = quaternionFourier.get_base(term, V2(
+            l,
+            t
+          ));
 
           V3 p = mapping.get_point(q);
 
@@ -67,8 +70,50 @@ struct AnimationData {
 
   }
 
-  void fill(size_t frames = 1000) {
+  void fill(
+    QuaternionFourier const & quaternionFourier,
+    size_t requested_lines,
+    size_t requested_frames = 1000,
+    Mapping const & mapping = Mapping()
+  ) {
+
     clear();
+    alloc(quaternionFourier.num_terms * requested_lines, requested_frames);
+
+    for (size_t line = 0; line < requested_lines; line++) {
+      double l = static_cast<double>(line) / static_cast<double>(requested_lines);
+
+      for (size_t frame = 0; frame < requested_frames; frame++) {
+        double t = static_cast<double>(frame) / static_cast<double>(requested_frames);
+
+        V3 offset = V3::Zero();
+        for (size_t term = 0; term < quaternionFourier.num_terms; term++) {
+
+          V3 location = offset;
+
+          Q q = quaternionFourier.get_term(term, V2(
+            l,
+            t
+          ));
+
+          V3 p = mapping.get_point(q);
+
+          double norm = p.norm();
+
+          size_t object_idx = line * quaternionFourier.num_terms + term;
+          scales_s[object_idx][frame][0] = norm;
+          scales_s[object_idx][frame][1] = 1.0;
+          scales_s[object_idx][frame][2] = 1.0;
+          locations_s[object_idx][frame] = location;
+          rotations_s[object_idx][frame] = sane_conv(Q::FromTwoVectors(default_dir, p));
+
+          offset += p;
+
+        }
+
+      }
+
+    }
 
   }
 

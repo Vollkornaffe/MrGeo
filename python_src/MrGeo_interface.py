@@ -7,11 +7,17 @@ def Clib(path):
     lib.QF_construct.argtypes = [c_size_t]
     lib.QF_construct.restype = c_void_p
 
+    lib.QF_torus_test.argtypes = [c_void_p]
+    lib.QF_torus_test.restype = None
+
     lib.AD_construct.argtypes = []
     lib.AD_construct.restype = c_void_p
 
     lib.AD_test_bases.argtypes = [c_void_p, c_void_p, c_size_t, c_size_t]
     lib.AD_test_bases.restype = None
+
+    lib.AD_fill.argtypes = [c_void_p, c_void_p, c_size_t, c_size_t]
+    lib.AD_fill.restype = None
 
     lib.AD_get_num_objects.argtypes = [c_void_p]
     lib.AD_get_num_objects.restype = c_size_t
@@ -32,8 +38,14 @@ def Clib(path):
         self.qf_obj = lib.QF_construct(max_spin)
         self.ad_obj = lib.AD_construct()
 
+    def torus_test(self):
+        lib.QF_torus_test(self.qf_obj)
+
     def test_bases(self, num_lines = 1, num_frames = 1000):
         lib.AD_test_bases(self.ad_obj, self.qf_obj, num_lines, num_frames)
+
+    def fill(self, num_lines = 1, num_frames = 1000):
+        lib.AD_fill(self.ad_obj, self.qf_obj, num_lines, num_frames)
 
     def get_num_objects(self):
         return lib.AD_get_num_objects(self.ad_obj);
@@ -52,7 +64,9 @@ def Clib(path):
 
     return type("MrGeoLib", (), {\
         "__init__": init,\
+        "torus_test": torus_test,\
         "test_bases": test_bases,\
+        "fill": fill,\
         "get_num_objects": get_num_objects,\
         "get_num_frames": get_num_frames,\
         "get_scales": get_scales,\

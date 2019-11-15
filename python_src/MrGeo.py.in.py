@@ -1,4 +1,5 @@
 import sys
+import timeit
 
 sys.path.append("@CMAKE_INSTALL_PREFIX@/MrGeo")
 binary_path = '@CMAKE_INSTALL_PREFIX@/MrGeo/libMrGeo.so.@RELOAD_COUNTER@'
@@ -18,14 +19,22 @@ fourierSpin = 4
 
 clib = MrGeo_interface.Clib(binary_path)(fourierSpin)
 
-clib.test_bases()
+#clib.test_bases()
+clib.torus_test()
+clib.fill()
 
 num_objects = clib.get_num_objects()
 num_frames = clib.get_num_frames()
 
 MrGeo_blender.cleanUp()
-for i in range(0, num_objects):
-    MrGeo_blender.addArrow(num_frames, template_mesh, str(i),\
-            clib.get_scales(i),\
-            clib.get_locations(i),\
-            clib.get_rotations(i))
+
+def run():
+    for i in range(0, num_objects):
+        MrGeo_blender.addArrow(num_frames, template_mesh, str(i), \
+                                       clib.get_scales(i), \
+                                       clib.get_locations(i), \
+                                       clib.get_rotations(i))
+
+print(timeit.timeit(run, number=1))
+
+

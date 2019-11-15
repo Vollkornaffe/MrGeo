@@ -6,6 +6,8 @@
 
 #include "util.h"
 
+#include "TorusTest.h"
+
 inline int sgn(int val) {
   return (0 < val) - (val < 0);
 }
@@ -31,6 +33,32 @@ struct QuaternionFourier {
 
   }
 
+  void interpolate(std::function<Q(const V2 &)> f, size_t interpolation_res = 100) {
+
+    double du = 1.0 / static_cast<double>(interpolation_res * interpolation_res);
+
+    V2 x;
+    for (size_t n = 0; n < interpolation_res; n++) {
+      x[0] = static_cast<double>(n) / static_cast<double>(interpolation_res);
+
+      for (size_t m = 0; m < interpolation_res; m++) {
+        x[1] = static_cast<double>(m) / static_cast<double>(interpolation_res);
+
+        Q q = f(x);
+
+        for (size_t t = 0; t < num_terms; t ++) {
+
+          V2 phase = - 2.0 * PI * x.cwiseProduct(u[t]);
+
+          Q left(cos(phase[0]), sin(phase[0]), 0.0, 0.0);
+          Q right(cos(phase[1]), 0.0, sin(phase[1]), 0.0);
+
+          q_add(f_hat[t], left * q * right, du);
+        }
+      }
+    }
+  }
+
   inline Q get_term(size_t n, V2 x) const {
 
     V2 phase = 2.0 * PI * x.cwiseProduct(u[n]);
@@ -51,6 +79,10 @@ struct QuaternionFourier {
 
     return left * Q(1.0,0.0,0.0,0.0) * right;
 
+  }
+
+  void test_interpolate() {
+    interpolate(torus_test);
   }
 
   size_t num_terms;
