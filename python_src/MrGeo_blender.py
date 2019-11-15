@@ -56,20 +56,30 @@ def addArrow(\
     fcu_rot_y.keyframe_points.add(num_frames)
     fcu_rot_z.keyframe_points.add(num_frames)
 
-    for kf in range(0, num_frames):
 
-        fcu_sca_x.keyframe_points[kf].co = kf, scales[kf][0]
-        fcu_sca_y.keyframe_points[kf].co = kf, scales[kf][1]
-        fcu_sca_z.keyframe_points[kf].co = kf, scales[kf][2]
+    def make_list(array, idx):
+        l = [0] * 2 * num_frames
+        i = 0
+        for kf in range(0, num_frames):
+            l[i] = kf
+            i += 1
+            l[i] = array[kf][idx]
+            i += 1
+        return l
 
-        fcu_loc_x.keyframe_points[kf].co = kf, positions[kf][0]
-        fcu_loc_y.keyframe_points[kf].co = kf, positions[kf][1]
-        fcu_loc_z.keyframe_points[kf].co = kf, positions[kf][2]
+    fcu_sca_x.keyframe_points.foreach_set('co', make_list(scales, 0))
+    fcu_sca_y.keyframe_points.foreach_set('co', make_list(scales, 1))
+    fcu_sca_z.keyframe_points.foreach_set('co', make_list(scales, 2))
 
-        fcu_rot_w.keyframe_points[kf].co = kf, rotations[kf][0]
-        fcu_rot_x.keyframe_points[kf].co = kf, rotations[kf][1]
-        fcu_rot_y.keyframe_points[kf].co = kf, rotations[kf][2]
-        fcu_rot_z.keyframe_points[kf].co = kf, rotations[kf][3]
+    fcu_loc_x.keyframe_points.foreach_set('co', make_list(positions, 0))
+    fcu_loc_y.keyframe_points.foreach_set('co', make_list(positions, 1))
+    fcu_loc_z.keyframe_points.foreach_set('co', make_list(positions, 2))
+
+    fcu_rot_w.keyframe_points.foreach_set('co', make_list(rotations, 0))
+    fcu_rot_x.keyframe_points.foreach_set('co', make_list(rotations, 1))
+    fcu_rot_y.keyframe_points.foreach_set('co', make_list(rotations, 2))
+    fcu_rot_z.keyframe_points.foreach_set('co', make_list(rotations, 3))
+
 
     fcu_sca_x.update()
     fcu_sca_y.update()
