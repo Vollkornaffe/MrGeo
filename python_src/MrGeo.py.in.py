@@ -21,7 +21,7 @@ clib = MrGeo_interface.Clib(binary_path)(fourierSpin)
 
 #clib.test_bases()
 clib.torus_test()
-clib.fill()
+clib.fill(20,200)
 
 num_objects = clib.get_num_objects()
 num_frames = clib.get_num_frames()

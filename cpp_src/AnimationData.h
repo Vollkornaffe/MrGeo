@@ -91,9 +91,15 @@ struct AnimationData {
 
           V3 location = offset;
 
+          //double phase = 2.0*PI*t;
+          //Q q = quaternionFourier.get_term(term, l*V2(
+          //  sin(phase),
+          //  cos(phase)
+          //));
+
           Q q = quaternionFourier.get_term(term, V2(
-            l,
-            t
+            t * 10.0 + l,
+            t + l
           ));
 
           V3 p = mapping.get_point(q);
