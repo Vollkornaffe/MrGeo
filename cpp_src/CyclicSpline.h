@@ -68,7 +68,7 @@ inline void compute_bases(
 ) {
 
   bases[0] = 1.0;
-  for (size_t j = 1; j <= degree; j++) {
+  for (size_t j = 1; j < degree + 1; j++) {
     double saved = 0.0;
     for (size_t r = 0; r < j; r++) {
       double temp = bases[r] / (right[r+1] + left[j-r]);
@@ -97,10 +97,21 @@ struct CyclicSpline {
     V_ui_o const & num_controls,
     V_ui_o const & num_samples
   ) : degrees(degrees), num_controls(num_controls), num_samples(num_samples) {
-    // TODO Throw exceptions on too small params
 
     for (size_t i = 0; i < Order; i++) {
-      control_intervals[i].values.resize(num_controls[i], 1.0/static_cast<double>(degrees[i]));
+      if (num_controls[i] < 3) {
+        throw std::invalid_argument("Number of control points MUST be at least 3 (in each dimension).");
+      }
+      if (degrees[i] + 1 > num_controls[i]) {
+        throw std::invalid_argument("Number of control points MUST be at least degree (in each dimension).");
+      }
+      if (num_samples[i] < 1) {
+        throw std::invalid_argument("Number of sample points MUST be at least 1 (in each dimension).");
+      }
+    }
+
+    for (size_t i = 0; i < Order; i++) {
+      control_intervals[i].values.resize(num_controls[i], 1.0/static_cast<double>(num_controls[i]));
     }
 
     control_points = CyclicTensor<Order, V_d_d>(num_controls);
@@ -161,7 +172,7 @@ struct CyclicSpline {
 
         sample_points[sample_idx] = V_d_d::Zero();
 
-        for (degree_idx[0] = 0; degree_idx[0] < degrees[0]; degree_idx[0]++) {
+        for (degree_idx[0] = 0; degree_idx[0] < degrees[0]+1; degree_idx[0]++) {
 
           control_idx =
             interval_idx.template cast<int>()
@@ -195,8 +206,8 @@ struct CyclicSpline {
 
           sample_points[sample_idx] = V_d_d::Zero();
 
-          for (degree_idx[0] = 0; degree_idx[0] < degrees[0]; degree_idx[0]++) {
-            for (degree_idx[1] = 0; degree_idx[1] < degrees[1]; degree_idx[1]++) {
+          for (degree_idx[0] = 0; degree_idx[0] < degrees[0]+1; degree_idx[0]++) {
+            for (degree_idx[1] = 0; degree_idx[1] < degrees[1]+1; degree_idx[1]++) {
 
               control_idx =
                 interval_idx.template cast<int>()
@@ -241,9 +252,9 @@ struct CyclicSpline {
 
             sample_points[sample_idx] = V_d_d::Zero();
 
-            for (degree_idx[0] = 0; degree_idx[0] < degrees[0]; degree_idx[0]++) {
-              for (degree_idx[1] = 0; degree_idx[1] < degrees[1]; degree_idx[1]++) {
-                for (degree_idx[2] = 0; degree_idx[2] < degrees[2]; degree_idx[2]++) {
+            for (degree_idx[0] = 0; degree_idx[0] < degrees[0]+1; degree_idx[0]++) {
+              for (degree_idx[1] = 0; degree_idx[1] < degrees[1]+1; degree_idx[1]++) {
+                for (degree_idx[2] = 0; degree_idx[2] < degrees[2]+1; degree_idx[2]++) {
 
                   control_idx =
                     interval_idx.template cast<int>()
