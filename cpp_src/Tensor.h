@@ -23,7 +23,7 @@ struct Tensor {
     values.resize(dimensions[0] * strides[0]);
   }
 
-  inline size_t get_idx( V_ui_o const & idx) {
+  inline size_t get_idx( V_ui_o const & idx) const {
 
     size_t res = 0;
     for (size_t i = 0; i < Order; i++) {

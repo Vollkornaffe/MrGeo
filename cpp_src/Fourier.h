@@ -8,6 +8,10 @@
 
 #include "TorusTest.h"
 
+#include "CyclicSpline.h"
+
+#include "Mapping.h"
+
 inline int sgn(int val) {
   return (0 < val) - (val < 0);
 }
@@ -54,6 +58,35 @@ struct QuaternionFourier {
           Q right(cos(phase[1]), 0.0, sin(phase[1]), 0.0);
 
           q_add(f_hat[t], left * q * right, du);
+        }
+      }
+    }
+  }
+
+  void interpolate(CyclicSurface3d const& cyclicSurface3d, Mapping const & mapping = Mapping()) {
+    double du = 1.0
+      / static_cast<double>(cyclicSurface3d.num_samples[0])
+      / static_cast<double>(cyclicSurface3d.num_samples[1])
+    ;
+
+    V2 x;
+    for (size_t n = 0; n < cyclicSurface3d.num_samples[0]; n++) {
+      x[0] = static_cast<double>(n) / static_cast<double>(cyclicSurface3d.num_samples[0]);
+
+      for (size_t m = 0; m < cyclicSurface3d.num_samples[1]; m++) {
+        x[1] = static_cast<double>(m) / static_cast<double>(cyclicSurface3d.num_samples[1]);
+
+        Q q = mapping.get_quaternion(cyclicSurface3d.sample_points[{n,m}]);
+
+        for (size_t t = 0; t < num_terms; t ++) {
+
+          V2 phase = - 2.0 * PI * x.cwiseProduct(u[t]);
+
+          Q left(cos(phase[0]), sin(phase[0]), 0.0, 0.0);
+          Q right(cos(phase[1]), 0.0, sin(phase[1]), 0.0);
+
+          q_add(f_hat[t], left * q * right, du);
+
         }
       }
     }

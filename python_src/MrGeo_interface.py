@@ -19,6 +19,9 @@ def Clib(path):
     lib.QF_torus_test.argtypes = [c_void_p]
     lib.QF_torus_test.restype = None
 
+    lib.QF_interpolate.argtypes = [c_void_p, c_void_p]
+    lib.QF_interpolate.restype = None
+
     lib.AD_construct.argtypes = []
     lib.AD_construct.restype = c_void_p
 
@@ -63,6 +66,9 @@ def Clib(path):
     def torus_test(self):
         lib.QF_torus_test(self.qf_obj)
 
+    def interpolate(self):
+        lib.QF_interpolate(self.qf_obj, self.cs_obj)
+
     def test_bases(self, num_lines = 1, num_frames = 1000):
         lib.AD_test_bases(self.ad_obj, self.qf_obj, num_lines, num_frames)
 
@@ -97,6 +103,7 @@ def Clib(path):
         "__init__": init,\
         "torus_test": torus_test,\
         "test_bases": test_bases,\
+        "interpolate": interpolate,\
         "fill": fill,\
         "get_num_objects": get_num_objects,\
         "get_num_frames": get_num_frames,\

@@ -9,23 +9,27 @@
 extern "C" {
   VISIBLE(QuaternionFourier* QF_construct(size_t max_spin)) { return new QuaternionFourier(max_spin); }
 
-  VISIBLE(void QF_torus_test(QuaternionFourier* quaternionFourier)) { quaternionFourier->test_interpolate(); }
+  VISIBLE(void QF_torus_test(QuaternionFourier* qf)) { qf->test_interpolate(); }
+
+  VISIBLE(void QF_interpolate(QuaternionFourier* qf, CyclicSurface3d* cs)) {
+    qf->interpolate(*cs);
+  }
 
   VISIBLE(AnimationData* AD_construct()) {return new AnimationData; }
 
   VISIBLE(void AD_test_bases(
     AnimationData* data,
-    QuaternionFourier* quaternionFourier,
+    QuaternionFourier* qf,
     size_t num_lines,
     size_t num_frames
-  )) { data->test_bases( *quaternionFourier, num_lines, num_frames ); }
+  )) { data->test_bases( *qf, num_lines, num_frames ); }
 
   VISIBLE(void AD_fill(
     AnimationData* data,
-    QuaternionFourier* quaternionFourier,
+    QuaternionFourier* qf,
     size_t num_lines,
     size_t num_frames
-  )) { data->fill( *quaternionFourier, num_lines, num_frames ); }
+  )) { data->fill( *qf, num_lines, num_frames ); }
 
   VISIBLE(size_t AD_get_num_objects(AnimationData* data)) { return data->num_objects; }
   VISIBLE(size_t AD_get_num_frames(AnimationData* data)) { return data->num_frames; }
