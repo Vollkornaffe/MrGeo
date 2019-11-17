@@ -97,3 +97,64 @@ def addArrow(\
     bpy.context.view_layer.active_layer_collection.collection.objects.link(new_obj)
 
     return new_obj
+
+def init_poly_surface(surfaceData):
+
+    if ("Control" in bpy.data.objects):
+        bpy.data.objects.remove(bpy.data.objects["Control"])
+    if ("Samples" in bpy.data.objects):
+        bpy.data.objects.remove(bpy.data.objects["Samples"])
+    if ("Control" in bpy.data.meshes):
+        bpy.data.meshes.remove(bpy.data.meshes["Control"])
+    if ("Samples" in bpy.data.meshes):
+        bpy.data.meshes.remove(bpy.data.meshes["Samples"])
+
+    bpy.ops.mesh.primitive_torus_add(major_segments=surfaceData.u_numControl, minor_segments=surfaceData.v_numControl, major_radius=2, minor_radius=1)
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.delete(type='ONLY_FACE')
+    bpy.ops.object.editmode_toggle()
+    bpy.context.object.name = "Control"
+    bpy.context.object.data.name = "Control"
+
+    bpy.ops.mesh.primitive_torus_add(major_segments=surfaceData.u_numSamples, minor_segments=surfaceData.v_numSamples, major_radius=2, minor_radius=1)
+    #bpy.ops.object.editmode_toggle()
+    #bpy.ops.mesh.select_all(action='SELECT')
+    #bpy.ops.mesh.delete(type='ONLY_FACE')
+    #bpy.ops.object.editmode_toggle()
+    bpy.context.object.name = "Samples"
+    bpy.context.object.data.name = "Samples"
+
+def update_control(clib, surfaceData):
+
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.object.editmode_toggle()
+
+    controlPoly = bpy.data.meshes['Control']
+    samplesPoly = bpy.data.meshes['Samples']
+
+    for j in range(0, surfaceData.u_numControl):
+        control_ptr = clib.get_control(j)
+        for i in range(0, surfaceData.v_numControl):
+            v = controlPoly.vertices[i + j * surfaceData.v_numControl]
+            control_ptr[i*3 + 0] = v.co.x
+            control_ptr[i*3 + 1] = v.co.y
+            control_ptr[i*3 + 2] = v.co.z
+
+def update_samples(clib, surfaceData):
+
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.object.editmode_toggle()
+
+    controlPoly = bpy.data.meshes['Control']
+    samplesPoly = bpy.data.meshes['Samples']
+
+    for j in range(0, surfaceData.u_numSamples):
+        samples_ptr = clib.get_samples(j)
+        for i in range(0, surfaceData.v_numSamples):
+            v = samplesPoly.vertices[i + j * surfaceData.v_numSamples]
+            v.co.x = samples_ptr[i*3 + 0]
+            v.co.y = samples_ptr[i*3 + 1]
+            v.co.z = samples_ptr[i*3 + 2]
+
+    samplesPoly.update()

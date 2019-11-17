@@ -1,11 +1,19 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 project(MrGeo)
+
+# -fPIC
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+
 add_library (MrGeo SHARED
         cpp_src/C_interface.cpp
 )
+
 target_link_libraries (MrGeo Eigen3::Eigen)
+
+# -fvisibility=hidden
+set_target_properties(MrGeo PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # this is a really ugly solution, but it should work
 # the problem is that the binary code isn't reloaded after a change
