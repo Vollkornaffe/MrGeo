@@ -32,7 +32,12 @@ configure_file(python_src/MrGeo.py.in.py MrGeo.py @ONLY)
 install(FILES
   ${CMAKE_SOURCE_DIR}/python_src/MrGeo_blender.py
   ${CMAKE_SOURCE_DIR}/python_src/MrGeo_interface.py
+
   ${CMAKE_BINARY_DIR}/MrGeo.py
+
+  ${CMAKE_SOURCE_DIR}/arrow_mesh.stl
+  ${CMAKE_SOURCE_DIR}/x_vertex_mesh.stl
+
   DESTINATION ${CMAKE_INSTALL_PREFIX}/MrGeo
 )
 

@@ -98,8 +98,8 @@ struct AnimationData {
           //));
 
           Q q = quaternionFourier.get_term(term, V2(
-            t * 10.0 + l,
-            t + l
+            t,
+            t * 10.0 + l
           ));
 
           V3 p = mapping.get_point(q);
@@ -108,8 +108,8 @@ struct AnimationData {
 
           size_t object_idx = line * quaternionFourier.num_terms + term;
           scales_s[object_idx][frame][0] = norm;
-          scales_s[object_idx][frame][1] = 1.0;
-          scales_s[object_idx][frame][2] = 1.0;
+          scales_s[object_idx][frame][1] = std::min(1.0, norm);
+          scales_s[object_idx][frame][2] = std::min(1.0, norm);
           locations_s[object_idx][frame] = location;
           rotations_s[object_idx][frame] = sane_conv(Q::FromTwoVectors(default_dir, p));
 

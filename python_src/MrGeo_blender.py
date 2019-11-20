@@ -1,6 +1,11 @@
 import bpy
 
 def cleanUp():
+
+    for obj in bpy.data.objects:
+        if obj.name.startswith("term_"):
+            bpy.data.objects.remove(obj)
+
     # clean up from previous runs
     for obj in bpy.data.objects:
         if obj.users == 0:
@@ -15,15 +20,27 @@ def cleanUp():
             bpy.data.meshes.remove(mesh)
 
 
+def addTraceObj(arrow_obj, x_vertex_mesh):
+    new_obj = bpy.data.objects.new(name=arrow_obj.name + "_trace", object_data=x_vertex_mesh)
+    new_obj.constraints.new("COPY_TRANSFORMS")
+    new_obj.constraints[0].target = arrow_obj
+    new_obj.modifiers.new("dummy", type="PARTICLE_SYSTEM")
+    new_obj.particle_systems[0].settings = bpy.data.particles["path_particles"]
+    bpy.data.particles.remove(bpy.data.particles["dummy"])
+
+    bpy.context.view_layer.active_layer_collection.collection.objects.link(new_obj)
+
+    return new_obj
+
 def addArrow(\
     num_frames,\
-    template_mesh,\
+    arrow_mesh,\
     name,\
     scales,\
     positions,\
     rotations):
 
-    new_obj = bpy.data.objects.new(name="object_"+name, object_data=template_mesh)
+    new_obj = bpy.data.objects.new(name="term_"+name, object_data=arrow_mesh)
 
     new_obj.rotation_mode = "QUATERNION"
 
@@ -158,3 +175,39 @@ def update_samples(clib, surfaceData):
             v.co.z = samples_ptr[i*3 + 2]
 
     samplesPoly.update()
+
+def load_template(path):
+    if ("arrow_mesh" in bpy.data.objects):
+        bpy.data.objects.remove(bpy.data.objects["arrow_mesh"])
+    if ("arrow_mesh" in bpy.data.meshes):
+        bpy.data.meshes.remove(bpy.data.meshes["arrow_mesh"])
+    bpy.ops.import_mesh.stl(filepath=path)
+    bpy.context.object.name = "arrow_mesh"
+    bpy.context.object.data.name = "arrow_mesh"
+    bpy.context.object.hide_viewport = True
+    bpy.context.object.hide_render = True
+
+    return bpy.context.object.data
+
+def init_path_tracing(path, num_frames):
+
+    for obj in bpy.data.particles:
+        bpy.data.particles.remove(obj)
+    particle_settings = bpy.data.particles.new("path_particles")
+    particle_settings.normal_factor = 0
+    particle_settings.effector_weights.gravity = 0
+    particle_settings.frame_end = num_frames
+    particle_settings.count = num_frames
+    particle_settings.lifetime = num_frames
+
+    if ("x_vertex" in bpy.data.objects):
+        bpy.data.objects.remove(bpy.data.objects["x_vertex"])
+    if ("x_vertex" in bpy.data.meshes):
+        bpy.data.meshes.remove(bpy.data.meshes["x_vertex"])
+    bpy.ops.import_mesh.stl(filepath=path)
+    bpy.context.object.name = "x_vertex"
+    bpy.context.object.data.name = "x_vertex"
+    bpy.context.object.hide_viewport = True
+    bpy.context.object.hide_render = True
+
+    return bpy.context.object.data
