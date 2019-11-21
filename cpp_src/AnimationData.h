@@ -98,8 +98,8 @@ struct AnimationData {
           //));
 
           Q q = quaternionFourier.get_term(term, V2(
-            t,
-            t * 10.0 + l
+            t + l,
+            l + 0.1*sin(2.0*PI*(t+l)*20.0)
           ));
 
           V3 p = mapping.get_point(q);

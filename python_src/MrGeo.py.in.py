@@ -1,4 +1,5 @@
 import sys
+import colorsys
 import timeit
 
 sys.path.append("@CMAKE_INSTALL_PREFIX@/MrGeo")
@@ -21,7 +22,7 @@ MrGeo_blender.init_poly_surface(surface_data)
 bpy.ops.object.editmode_toggle()
 bpy.ops.object.editmode_toggle()
 
-fourierSpin = 10
+fourierSpin = 2
 num_frames = 100
 num_lines = 3
 
@@ -40,17 +41,30 @@ num_objects = clib.get_num_objects()
 num_frames = clib.get_num_frames()
 
 MrGeo_blender.cleanUp()
-arrow_mesh = MrGeo_blender.load_template("@CMAKE_INSTALL_PREFIX@/MrGeo/arrow_mesh.stl")
-x_vertex_mesh = MrGeo_blender.init_path_tracing("@CMAKE_INSTALL_PREFIX@/MrGeo/x_vertex_mesh.stl", num_frames)
+arrow_mesh = MrGeo_blender.load_arrow_mesh("@CMAKE_INSTALL_PREFIX@/MrGeo/arrow_mesh.stl")
+x_vertex_mesh = MrGeo_blender.load_x_vertex_mesh("@CMAKE_INSTALL_PREFIX@/MrGeo/x_vertex_mesh.stl", num_frames)
+MrGeo_blender.init_materials(num_lines)
 def run():
+
+    line_id = 0
     for i in range(0, num_objects):
-        arrow_obj = MrGeo_blender.addArrow(num_frames, arrow_mesh, \
-           str(i), \
-           clib.get_scales(i), \
-           clib.get_locations(i), \
-           clib.get_rotations(i))
+        arrow_obj = MrGeo_blender.addArrow( \
+            num_frames, \
+            arrow_mesh, \
+            str(i), \
+            clib.get_scales(i), \
+            clib.get_locations(i), \
+            clib.get_rotations(i))
+
         if (i+1) % (num_objects/num_lines) == 0:
-            MrGeo_blender.addTraceObj(arrow_obj, x_vertex_mesh)
+            MrGeo_blender.addTraceObj( \
+                x_vertex_mesh, \
+                str(line_id), \
+                arrow_obj, \
+                num_frames, \
+                bpy.data.materials["line_material_"+str(line_id)])
+
+            line_id+=1
 
 print(timeit.timeit(run, number=1))
 

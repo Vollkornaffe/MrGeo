@@ -6,6 +6,10 @@ def cleanUp():
         if obj.name.startswith("term_"):
             bpy.data.objects.remove(obj)
 
+    for obj in bpy.data.objects:
+        if obj.name.startswith("line_"):
+            bpy.data.objects.remove(obj)
+
     # clean up from previous runs
     for obj in bpy.data.objects:
         if obj.users == 0:
@@ -18,15 +22,46 @@ def cleanUp():
     for mesh in bpy.data.meshes:
         if mesh.users == 0:
             bpy.data.meshes.remove(mesh)
+    for material in bpy.data.materials:
+        if material.users == 0:
+            bpy.data.materials.remove(material)
+    for obj in bpy.data.particles:
+        bpy.data.particles.remove(obj)
 
+def init_materials(num_lines):
+    for i in range(0, num_lines):
+        # colorful material
+        mat = bpy.data.materials.new("line_material_"+str(i))
+        mat.diffuse_color = colorsys.hsv_to_rgb(i/num_lines,1,1)[:] + (1.0,)
 
-def addTraceObj(arrow_obj, x_vertex_mesh):
-    new_obj = bpy.data.objects.new(name=arrow_obj.name + "_trace", object_data=x_vertex_mesh)
+def addTraceObj(x_vertex_mesh, name, arrow_obj, num_frames, material):
+
+    # object to render for the particles
+    particle_render_obj = bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=0)
+    bpy.context.object.name = "line_render_"+name
+    bpy.context.object.data.name = "line_render_"+name
+    bpy.context.object.hide_viewport = True
+    bpy.context.object.hide_render = True
+    bpy.data.objects["line_render_"+name].active_material = material
+
+    # set up particles
+
+    particle_settings = bpy.data.particles.new("line_particles_"+name)
+    particle_settings.normal_factor = 0
+    particle_settings.effector_weights.gravity = 0
+    particle_settings.frame_end = num_frames
+    particle_settings.count = num_frames
+    particle_settings.lifetime = num_frames
+    particle_settings.render_type = "OBJECT"
+    particle_settings.emit_from = "VERT"
+    particle_settings.instance_object = bpy.data.objects["line_render_"+name]
+
+    # object to trace out the line & to emit the particles
+    new_obj = bpy.data.objects.new(name="line_tracer_"+name, object_data=x_vertex_mesh)
     new_obj.constraints.new("COPY_TRANSFORMS")
     new_obj.constraints[0].target = arrow_obj
     new_obj.modifiers.new("dummy", type="PARTICLE_SYSTEM")
-    new_obj.particle_systems[0].settings = bpy.data.particles["path_particles"]
-    bpy.data.particles.remove(bpy.data.particles["dummy"])
+    new_obj.particle_systems[0].settings = bpy.data.particles["line_particles_"+name]
 
     bpy.context.view_layer.active_layer_collection.collection.objects.link(new_obj)
 
@@ -176,7 +211,7 @@ def update_samples(clib, surfaceData):
 
     samplesPoly.update()
 
-def load_template(path):
+def load_arrow_mesh(path):
     if ("arrow_mesh" in bpy.data.objects):
         bpy.data.objects.remove(bpy.data.objects["arrow_mesh"])
     if ("arrow_mesh" in bpy.data.meshes):
@@ -189,16 +224,8 @@ def load_template(path):
 
     return bpy.context.object.data
 
-def init_path_tracing(path, num_frames):
+def load_x_vertex_mesh(path, num_frames):
 
-    for obj in bpy.data.particles:
-        bpy.data.particles.remove(obj)
-    particle_settings = bpy.data.particles.new("path_particles")
-    particle_settings.normal_factor = 0
-    particle_settings.effector_weights.gravity = 0
-    particle_settings.frame_end = num_frames
-    particle_settings.count = num_frames
-    particle_settings.lifetime = num_frames
 
     if ("x_vertex" in bpy.data.objects):
         bpy.data.objects.remove(bpy.data.objects["x_vertex"])
