@@ -43,4 +43,5 @@ install(FILES
 
 install(TARGETS MrGeo DESTINATION ${CMAKE_INSTALL_PREFIX}/MrGeo)
 
-add_subdirectory(test)
+# there are no tests yet
+#add_subdirectory(test)
